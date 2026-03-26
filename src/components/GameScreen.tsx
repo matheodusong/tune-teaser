@@ -91,6 +91,43 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult }: GameScreenProps) 
     }
   }, []);
 
+  // Validate track is playable when widget loads
+  useEffect(() => {
+    if (!audioLoaded || !widgetRef.current) return;
+    setTrackBlocked(false);
+    setTrackReady(false);
+
+    const checkWidget = () => {
+      const widget = (window as any).SC?.Widget?.(widgetRef.current);
+      if (!widget) return;
+
+      widget.bind((window as any).SC.Widget.Events.READY, () => {
+        widget.getDuration((duration: number) => {
+          if (!duration || duration === 0) {
+            setTrackBlocked(true);
+          } else {
+            setTrackReady(true);
+          }
+        });
+      });
+
+      widget.bind((window as any).SC.Widget.Events.ERROR, () => {
+        setTrackBlocked(true);
+      });
+    };
+
+    // Small delay to let iframe initialize
+    const timeout = setTimeout(checkWidget, 500);
+    return () => clearTimeout(timeout);
+  }, [audioLoaded, song]);
+
+  // Auto-skip blocked tracks
+  useEffect(() => {
+    if (trackBlocked && !revealed) {
+      onResult(false, 0);
+    }
+  }, [trackBlocked, revealed, onResult]);
+
   // Reset when song changes  
   useEffect(() => {
     setAttempt(0);
@@ -98,6 +135,8 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult }: GameScreenProps) 
     setIsPlaying(false);
     setProgress(0);
     setRevealed(false);
+    setTrackBlocked(false);
+    setTrackReady(false);
     if (timerRef.current) clearInterval(timerRef.current);
   }, [song]);
 
