@@ -4,7 +4,7 @@ import { Music, RotateCcw, Headphones } from "lucide-react";
 import GameScreen from "@/components/GameScreen";
 import Leaderboard, { LeaderboardEntry } from "@/components/Leaderboard";
 import SongResult from "@/components/SongResult";
-import { Song, getDailySongs, generateRandomName } from "@/data/songs";
+import { Song, getRandomSongs, generateRandomName } from "@/data/songs";
 
 type GameState = "menu" | "playing" | "finished";
 
@@ -32,7 +32,7 @@ const Index = () => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(FAKE_LEADERBOARD);
 
   const startGame = () => {
-    const gameSongs = getDailySongs(10);
+    const gameSongs = getRandomSongs(10);
     setSongs(gameSongs);
     setCurrentSongIndex(0);
     setResults([]);
