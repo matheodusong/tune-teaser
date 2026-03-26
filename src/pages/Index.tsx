@@ -41,10 +41,13 @@ const Index = () => {
   };
 
   const handleSongResult = (correct: boolean, attempts: number) => {
+    const isSkippedBlocked = attempts === 0;
     const points = correct ? 6 - attempts : 0;
     const newScore = score + points;
     setScore(newScore);
-    setResults([...results, { song: songs[currentSongIndex], correct, attempts }]);
+    if (!isSkippedBlocked) {
+      setResults([...results, { song: songs[currentSongIndex], correct, attempts }]);
+    }
 
     setTimeout(() => {
       if (currentSongIndex + 1 >= songs.length) {
