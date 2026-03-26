@@ -32,7 +32,7 @@ const Index = () => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>(FAKE_LEADERBOARD);
 
   const startGame = () => {
-    const gameSongs = getRandomSongs(10);
+    const gameSongs = getDailySongs(10);
     setSongs(gameSongs);
     setCurrentSongIndex(0);
     setResults([]);
