@@ -25,14 +25,14 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult }: GameScreenProps) 
   const [progress, setProgress] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [audioLoaded, setAudioLoaded] = useState(false);
+  const [trackBlocked, setTrackBlocked] = useState(false);
+  const [trackReady, setTrackReady] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const widgetRef = useRef<HTMLIFrameElement | null>(null);
 
   const currentMaxDuration = DURATIONS[Math.min(attempt, 4)];
 
-  // We'll use a simple Audio approach with SoundCloud widget API
-  // Since direct audio isn't available, we use the SC widget
   const scWidgetUrl = `https://w.soundcloud.com/player/?url=${encodeURIComponent(song.soundcloudUrl)}&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&visual=false`;
 
   const playSnippet = useCallback(() => {
