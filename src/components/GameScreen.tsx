@@ -204,53 +204,65 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult }: GameScreenProps) 
         title="SoundCloud Player"
       />
 
-      {/* Waveform visualization */}
-      <div className="w-full glass rounded-lg p-4">
-        <Waveform
-          isPlaying={isPlaying}
-          progress={progress}
-          maxDuration={currentMaxDuration}
-          totalDuration={TOTAL_VISIBLE_DURATION}
-        />
-      </div>
-
-      {/* Play controls */}
-      <div className="flex items-center gap-3">
-        <Button
-          variant="neon"
-          size="lg"
-          onClick={isPlaying ? stopPlayback : playSnippet}
-          className="animate-pulse-glow"
-        >
-          {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
-          <span className="ml-1 font-mono text-xs">{currentMaxDuration}s</span>
-        </Button>
-      </div>
-
-      {/* Attempt dots */}
-      <AttemptDots attempts={attempts} />
-
-      {/* Result reveal */}
-      {revealed && (
-        <div className={`text-center p-4 rounded-lg w-full ${attempts.includes("correct") ? "neon-box" : "bg-destructive/10 border border-destructive/30"}`}>
-          <p className="font-bold text-lg">{song.title}</p>
-          <p className="text-sm text-muted-foreground">{song.artist}</p>
-          {attempts.includes("correct") ? (
-            <p className="neon-text text-sm mt-1 font-mono">+{6 - attempt} points</p>
-          ) : (
-            <p className="text-destructive text-sm mt-1 font-mono">+0 points</p>
-          )}
+      {trackBlocked ? (
+        <div className="text-center p-4 rounded-lg w-full bg-muted/20 border border-muted-foreground/20">
+          <p className="text-sm text-muted-foreground font-mono">Track unavailable, skipping...</p>
         </div>
-      )}
+      ) : !trackReady ? (
+        <div className="text-center p-4 rounded-lg w-full">
+          <p className="text-sm text-muted-foreground font-mono animate-pulse">Loading track...</p>
+        </div>
+      ) : (
+        <>
+          {/* Waveform visualization */}
+          <div className="w-full glass rounded-lg p-4">
+            <Waveform
+              isPlaying={isPlaying}
+              progress={progress}
+              maxDuration={currentMaxDuration}
+              totalDuration={TOTAL_VISIBLE_DURATION}
+            />
+          </div>
 
-      {/* Guess input */}
-      <GuessInput
-        onGuess={handleGuess}
-        onSkip={handleSkip}
-        disabled={revealed}
-        attempt={attempt + 1}
-        maxAttempts={5}
-      />
+          {/* Play controls */}
+          <div className="flex items-center gap-3">
+            <Button
+              variant="neon"
+              size="lg"
+              onClick={isPlaying ? stopPlayback : playSnippet}
+              className="animate-pulse-glow"
+            >
+              {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+              <span className="ml-1 font-mono text-xs">{currentMaxDuration}s</span>
+            </Button>
+          </div>
+
+          {/* Attempt dots */}
+          <AttemptDots attempts={attempts} />
+
+          {/* Result reveal */}
+          {revealed && (
+            <div className={`text-center p-4 rounded-lg w-full ${attempts.includes("correct") ? "neon-box" : "bg-destructive/10 border border-destructive/30"}`}>
+              <p className="font-bold text-lg">{song.title}</p>
+              <p className="text-sm text-muted-foreground">{song.artist}</p>
+              {attempts.includes("correct") ? (
+                <p className="neon-text text-sm mt-1 font-mono">+{6 - attempt} points</p>
+              ) : (
+                <p className="text-destructive text-sm mt-1 font-mono">+0 points</p>
+              )}
+            </div>
+          )}
+
+          {/* Guess input */}
+          <GuessInput
+            onGuess={handleGuess}
+            onSkip={handleSkip}
+            disabled={revealed}
+            attempt={attempt + 1}
+            maxAttempts={5}
+          />
+        </>
+      )}
     </div>
   );
 };
