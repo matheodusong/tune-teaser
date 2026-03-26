@@ -25,14 +25,14 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult }: GameScreenProps) 
   const [progress, setProgress] = useState(0);
   const [revealed, setRevealed] = useState(false);
   const [audioLoaded, setAudioLoaded] = useState(false);
+  const [trackBlocked, setTrackBlocked] = useState(false);
+  const [trackReady, setTrackReady] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const widgetRef = useRef<HTMLIFrameElement | null>(null);
 
   const currentMaxDuration = DURATIONS[Math.min(attempt, 4)];
 
-  // We'll use a simple Audio approach with SoundCloud widget API
-  // Since direct audio isn't available, we use the SC widget
   const scWidgetUrl = `https://w.soundcloud.com/player/?url=${encodeURIComponent(song.soundcloudUrl)}&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&visual=false`;
 
   const playSnippet = useCallback(() => {
@@ -91,6 +91,43 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult }: GameScreenProps) 
     }
   }, []);
 
+  // Validate track is playable when widget loads
+  useEffect(() => {
+    if (!audioLoaded || !widgetRef.current) return;
+    setTrackBlocked(false);
+    setTrackReady(false);
+
+    const checkWidget = () => {
+      const widget = (window as any).SC?.Widget?.(widgetRef.current);
+      if (!widget) return;
+
+      widget.bind((window as any).SC.Widget.Events.READY, () => {
+        widget.getDuration((duration: number) => {
+          if (!duration || duration === 0) {
+            setTrackBlocked(true);
+          } else {
+            setTrackReady(true);
+          }
+        });
+      });
+
+      widget.bind((window as any).SC.Widget.Events.ERROR, () => {
+        setTrackBlocked(true);
+      });
+    };
+
+    // Small delay to let iframe initialize
+    const timeout = setTimeout(checkWidget, 500);
+    return () => clearTimeout(timeout);
+  }, [audioLoaded, song]);
+
+  // Auto-skip blocked tracks
+  useEffect(() => {
+    if (trackBlocked && !revealed) {
+      onResult(false, 0);
+    }
+  }, [trackBlocked, revealed, onResult]);
+
   // Reset when song changes  
   useEffect(() => {
     setAttempt(0);
@@ -98,6 +135,8 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult }: GameScreenProps) 
     setIsPlaying(false);
     setProgress(0);
     setRevealed(false);
+    setTrackBlocked(false);
+    setTrackReady(false);
     if (timerRef.current) clearInterval(timerRef.current);
   }, [song]);
 
@@ -165,53 +204,65 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult }: GameScreenProps) 
         title="SoundCloud Player"
       />
 
-      {/* Waveform visualization */}
-      <div className="w-full glass rounded-lg p-4">
-        <Waveform
-          isPlaying={isPlaying}
-          progress={progress}
-          maxDuration={currentMaxDuration}
-          totalDuration={TOTAL_VISIBLE_DURATION}
-        />
-      </div>
-
-      {/* Play controls */}
-      <div className="flex items-center gap-3">
-        <Button
-          variant="neon"
-          size="lg"
-          onClick={isPlaying ? stopPlayback : playSnippet}
-          className="animate-pulse-glow"
-        >
-          {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
-          <span className="ml-1 font-mono text-xs">{currentMaxDuration}s</span>
-        </Button>
-      </div>
-
-      {/* Attempt dots */}
-      <AttemptDots attempts={attempts} />
-
-      {/* Result reveal */}
-      {revealed && (
-        <div className={`text-center p-4 rounded-lg w-full ${attempts.includes("correct") ? "neon-box" : "bg-destructive/10 border border-destructive/30"}`}>
-          <p className="font-bold text-lg">{song.title}</p>
-          <p className="text-sm text-muted-foreground">{song.artist}</p>
-          {attempts.includes("correct") ? (
-            <p className="neon-text text-sm mt-1 font-mono">+{6 - attempt} points</p>
-          ) : (
-            <p className="text-destructive text-sm mt-1 font-mono">+0 points</p>
-          )}
+      {trackBlocked ? (
+        <div className="text-center p-4 rounded-lg w-full bg-muted/20 border border-muted-foreground/20">
+          <p className="text-sm text-muted-foreground font-mono">Track unavailable, skipping...</p>
         </div>
-      )}
+      ) : !trackReady ? (
+        <div className="text-center p-4 rounded-lg w-full">
+          <p className="text-sm text-muted-foreground font-mono animate-pulse">Loading track...</p>
+        </div>
+      ) : (
+        <>
+          {/* Waveform visualization */}
+          <div className="w-full glass rounded-lg p-4">
+            <Waveform
+              isPlaying={isPlaying}
+              progress={progress}
+              maxDuration={currentMaxDuration}
+              totalDuration={TOTAL_VISIBLE_DURATION}
+            />
+          </div>
 
-      {/* Guess input */}
-      <GuessInput
-        onGuess={handleGuess}
-        onSkip={handleSkip}
-        disabled={revealed}
-        attempt={attempt + 1}
-        maxAttempts={5}
-      />
+          {/* Play controls */}
+          <div className="flex items-center gap-3">
+            <Button
+              variant="neon"
+              size="lg"
+              onClick={isPlaying ? stopPlayback : playSnippet}
+              className="animate-pulse-glow"
+            >
+              {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+              <span className="ml-1 font-mono text-xs">{currentMaxDuration}s</span>
+            </Button>
+          </div>
+
+          {/* Attempt dots */}
+          <AttemptDots attempts={attempts} />
+
+          {/* Result reveal */}
+          {revealed && (
+            <div className={`text-center p-4 rounded-lg w-full ${attempts.includes("correct") ? "neon-box" : "bg-destructive/10 border border-destructive/30"}`}>
+              <p className="font-bold text-lg">{song.title}</p>
+              <p className="text-sm text-muted-foreground">{song.artist}</p>
+              {attempts.includes("correct") ? (
+                <p className="neon-text text-sm mt-1 font-mono">+{6 - attempt} points</p>
+              ) : (
+                <p className="text-destructive text-sm mt-1 font-mono">+0 points</p>
+              )}
+            </div>
+          )}
+
+          {/* Guess input */}
+          <GuessInput
+            onGuess={handleGuess}
+            onSkip={handleSkip}
+            disabled={revealed}
+            attempt={attempt + 1}
+            maxAttempts={5}
+          />
+        </>
+      )}
     </div>
   );
 };
