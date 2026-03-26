@@ -4,7 +4,7 @@ import { Music, RotateCcw, Headphones } from "lucide-react";
 import GameScreen from "@/components/GameScreen";
 import Leaderboard, { LeaderboardEntry } from "@/components/Leaderboard";
 import SongResult from "@/components/SongResult";
-import { Song, getRandomSongs, generateRandomName } from "@/data/songs";
+import { Song, getDailySongs, generateRandomName } from "@/data/songs";
 
 type GameState = "menu" | "playing" | "finished";
 
