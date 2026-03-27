@@ -1,22 +1,23 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Play, Pause, RotateCcw, Music } from "lucide-react";
+import { Play, Pause, Music } from "lucide-react";
 import { Song } from "@/data/songs";
 import GuessInput from "./GuessInput";
 import AttemptDots from "./AttemptDots";
 import Waveform from "./Waveform";
 
 const DURATIONS = [1, 2, 5, 8, 10];
-const TOTAL_VISIBLE_DURATION = 30; // for waveform visualization
+const TOTAL_VISIBLE_DURATION = 30;
 
 interface GameScreenProps {
   song: Song;
   songIndex: number;
   totalSongs: number;
   onResult: (correct: boolean, attempts: number) => void;
+  onTrackBlocked: () => void;
 }
 
-const GameScreen = ({ song, songIndex, totalSongs, onResult }: GameScreenProps) => {
+const GameScreen = ({ song, songIndex, totalSongs, onResult, onTrackBlocked }: GameScreenProps) => {
   const [attempt, setAttempt] = useState(0);
   const [attempts, setAttempts] = useState<("correct" | "wrong" | "skipped" | "pending")[]>(
     Array(5).fill("pending")
@@ -27,7 +28,6 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult }: GameScreenProps) 
   const [audioLoaded, setAudioLoaded] = useState(false);
   const [trackBlocked, setTrackBlocked] = useState(false);
   const [trackReady, setTrackReady] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const widgetRef = useRef<HTMLIFrameElement | null>(null);
 
@@ -37,7 +37,6 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult }: GameScreenProps) 
 
   const playSnippet = useCallback(() => {
     if (!widgetRef.current) return;
-    
     const widget = (window as any).SC?.Widget?.(widgetRef.current);
     if (!widget) return;
 
@@ -91,7 +90,7 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult }: GameScreenProps) 
     }
   }, []);
 
-  // Validate track is playable when widget loads
+  // Validate track
   useEffect(() => {
     if (!audioLoaded || !widgetRef.current) return;
     setTrackBlocked(false);
@@ -116,19 +115,18 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult }: GameScreenProps) 
       });
     };
 
-    // Small delay to let iframe initialize
     const timeout = setTimeout(checkWidget, 500);
     return () => clearTimeout(timeout);
   }, [audioLoaded, song]);
 
-  // Auto-skip blocked tracks
+  // When track is blocked, notify parent to skip without counting
   useEffect(() => {
     if (trackBlocked && !revealed) {
-      onResult(false, 0);
+      onTrackBlocked();
     }
-  }, [trackBlocked, revealed, onResult]);
+  }, [trackBlocked, revealed, onTrackBlocked]);
 
-  // Reset when song changes  
+  // Reset when song changes
   useEffect(() => {
     setAttempt(0);
     setAttempts(Array(5).fill("pending"));
@@ -187,13 +185,11 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult }: GameScreenProps) 
 
   return (
     <div className="flex flex-col items-center gap-6 w-full max-w-lg">
-      {/* Song counter */}
       <div className="flex items-center gap-2 text-sm font-mono text-muted-foreground">
         <Music className="h-4 w-4" />
-        <span>Song {songIndex + 1} / {totalSongs}</span>
+        <span>Son {songIndex + 1} / {totalSongs}</span>
       </div>
 
-      {/* Hidden SoundCloud widget */}
       <iframe
         ref={widgetRef}
         src={scWidgetUrl}
@@ -206,15 +202,14 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult }: GameScreenProps) 
 
       {trackBlocked ? (
         <div className="text-center p-4 rounded-lg w-full bg-muted/20 border border-muted-foreground/20">
-          <p className="text-sm text-muted-foreground font-mono">Track unavailable, skipping...</p>
+          <p className="text-sm text-muted-foreground font-mono">Son indisponible, passage au suivant...</p>
         </div>
       ) : !trackReady ? (
         <div className="text-center p-4 rounded-lg w-full">
-          <p className="text-sm text-muted-foreground font-mono animate-pulse">Loading track...</p>
+          <p className="text-sm text-muted-foreground font-mono animate-pulse">Chargement...</p>
         </div>
       ) : (
         <>
-          {/* Waveform visualization */}
           <div className="w-full glass rounded-lg p-4">
             <Waveform
               isPlaying={isPlaying}
@@ -224,7 +219,6 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult }: GameScreenProps) 
             />
           </div>
 
-          {/* Play controls */}
           <div className="flex items-center gap-3">
             <Button
               variant="neon"
@@ -237,10 +231,8 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult }: GameScreenProps) 
             </Button>
           </div>
 
-          {/* Attempt dots */}
           <AttemptDots attempts={attempts} />
 
-          {/* Result reveal */}
           {revealed && (
             <div className={`text-center p-4 rounded-lg w-full ${attempts.includes("correct") ? "neon-box" : "bg-destructive/10 border border-destructive/30"}`}>
               <p className="font-bold text-lg">{song.title}</p>
@@ -253,7 +245,6 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult }: GameScreenProps) 
             </div>
           )}
 
-          {/* Guess input */}
           <GuessInput
             onGuess={handleGuess}
             onSkip={handleSkip}
