@@ -4,47 +4,56 @@ export interface Song {
   soundcloudUrl: string;
 }
 
-// Sélection Rap FR & US 2025-2026 - Rotation quotidienne
+// Meilleurs sons Rap FR 2024-2026
 export const songPool: Song[] = [
-  // --- RAP FR (Hits actuels & classiques récents) ---
+  // --- 2024 ---
   { title: "Pyramide", artist: "Werenoi", soundcloudUrl: "https://soundcloud.com/werenoi/pyramide" },
-  { title: "Mona Lisa", artist: "Booba ft. JSX", soundcloudUrl: "https://soundcloud.com/booba-official/mona-lisa" },
-  { title: "Chambellan", artist: "Gazo", soundcloudUrl: "https://soundcloud.com/gazo-official/chambellan" },
-  { title: "Tout en haut", artist: "Ninho", soundcloudUrl: "https://soundcloud.com/ninho-official/tout-en-haut" },
-  { title: "CBA", artist: "SDM", soundcloudUrl: "https://soundcloud.com/sdm-official/cba" },
-  { title: "Imagine", artist: "Carbonne", soundcloudUrl: "https://soundcloud.com/carbonne/imagine" },
-  { title: "Spider", artist: "Gims ft. Dystinct", soundcloudUrl: "https://soundcloud.com/gims/spider" },
-  { title: "Positions", artist: "Hamza", soundcloudUrl: "https://soundcloud.com/hamza-official/positions" },
-  { title: "Tulum", artist: "Tiakola", soundcloudUrl: "https://soundcloud.com/tiakola/tulum" },
-  { title: "I Love You", artist: "Tayc", soundcloudUrl: "https://soundcloud.com/tayc-official/i-love-you" },
-  { title: "Hov", artist: "Zola", soundcloudUrl: "https://soundcloud.com/zola/hov" },
+  { title: "Bande organisée 2", artist: "Jul ft. Various", soundcloudUrl: "https://soundcloud.com/jul-music/bande-organisee-2" },
+  { title: "Chambellan", artist: "Gazo", soundcloudUrl: "https://soundcloud.com/gazo-music/chambellan" },
+  { title: "Tout en haut", artist: "Ninho", soundcloudUrl: "https://soundcloud.com/ninhofficiel/tout-en-haut" },
+  { title: "CBA", artist: "SDM", soundcloudUrl: "https://soundcloud.com/sdm-officiel/cba" },
+  { title: "Imagine", artist: "Carbonne", soundcloudUrl: "https://soundcloud.com/carbonne-officiel/imagine" },
+  { title: "Spider", artist: "Gims ft. Dystinct", soundcloudUrl: "https://soundcloud.com/gaborockmusic/spider" },
+  { title: "Tulum", artist: "Tiakola", soundcloudUrl: "https://soundcloud.com/tiakola-officiel/tulum" },
+  { title: "Hov", artist: "Zola", soundcloudUrl: "https://soundcloud.com/zola-officiel/hov" },
   { title: "C'est la vie", artist: "SCH", soundcloudUrl: "https://soundcloud.com/sch/cest-la-vie" },
+  { title: "Jefe", artist: "Naps", soundcloudUrl: "https://soundcloud.com/naps-officiel/jefe" },
+  { title: "La zone", artist: "Jul", soundcloudUrl: "https://soundcloud.com/jul-music/la-zone" },
+  { title: "Kratos", artist: "Freeze Corleone", soundcloudUrl: "https://soundcloud.com/music-fcrl/kratos" },
+  { title: "Saiyan", artist: "Gazo ft. Tiakola", soundcloudUrl: "https://soundcloud.com/gazo-music/saiyan" },
+  { title: "Fantôme", artist: "Damso", soundcloudUrl: "https://soundcloud.com/damsofficiel/fantome" },
+  { title: "Billet vert", artist: "Ninho", soundcloudUrl: "https://soundcloud.com/ninhofficiel/billet-vert" },
+  { title: "Longue vie", artist: "PLK", soundcloudUrl: "https://soundcloud.com/plk-music/longue-vie" },
+  { title: "Filtré", artist: "Damso", soundcloudUrl: "https://soundcloud.com/damsofficiel/filtre" },
+  { title: "Pégase", artist: "SCH", soundcloudUrl: "https://soundcloud.com/sch/pegase" },
 
-  // --- RAP US (2025 mega hits & NYC Vibe) ---
-  { title: "Not Like Us", artist: "Kendrick Lamar", soundcloudUrl: "https://soundcloud.com/kendrick-lamar-one/not-like-us" },
-  { title: "Like That", artist: "Future & Metro Boomin", soundcloudUrl: "https://soundcloud.com/future-official/like-that" },
-  { title: "Type Shit", artist: "Future ft. Travis Scott", soundcloudUrl: "https://soundcloud.com/future-official/type-shit" },
-  { title: "FE!N", artist: "Travis Scott ft. Playboi Carti", soundcloudUrl: "https://soundcloud.com/travisscott-2/fein" },
-  { title: "Bandit", artist: "Don Toliver", soundcloudUrl: "https://soundcloud.com/dontoliver/bandit" },
-  { title: "Million Dollar Baby", artist: "Tommy Richman", soundcloudUrl: "https://soundcloud.com/tommyrichman/million-dollar-baby" },
-  { title: "HISS", artist: "Megan Thee Stallion", soundcloudUrl: "https://soundcloud.com/megantheestallion/hiss" },
-  { title: "Carnival", artist: "Ye (Kanye West) & Ty Dolla $ign", soundcloudUrl: "https://soundcloud.com/kanyewest/carnival" },
-  { title: "Push Ups", artist: "Drake", soundcloudUrl: "https://soundcloud.com/octobersveryown/push-ups" },
-  { title: "Euphoria", artist: "Kendrick Lamar", soundcloudUrl: "https://soundcloud.com/kendrick-lamar-one/euphoria" },
-  { title: "All Red", artist: "Playboi Carti", soundcloudUrl: "https://soundcloud.com/playboicarti/all-red" },
-  { title: "Starboy", artist: "The Weeknd (Classic)", soundcloudUrl: "https://soundcloud.com/theweeknd/starboy" },
-  { title: "Family Matters", artist: "Drake", soundcloudUrl: "https://soundcloud.com/octobersveryown/family-matters" },
-  { title: "Oklama", artist: "Kendrick Lamar", soundcloudUrl: "https://soundcloud.com/kendrick-lamar-one/oklama" },
-  { title: "Yeah Glo!", artist: "GloRilla", soundcloudUrl: "https://soundcloud.com/glorilla/yeah-glo" },
-  { title: "Aftërlyfe", artist: "Yeat", soundcloudUrl: "https://soundcloud.com/yeat/afterlyfe" },
-  { title: "Meltdown", artist: "Travis Scott ft. Drake", soundcloudUrl: "https://soundcloud.com/travisscott-2/meltdown" },
-  { title: "Redrum", artist: "21 Savage", soundcloudUrl: "https://soundcloud.com/21savage/redrum" }
+  // --- 2025 ---
+  { title: "Mona Lisa", artist: "Booba ft. JSX", soundcloudUrl: "https://soundcloud.com/booba/mona-lisa" },
+  { title: "Positions", artist: "Hamza", soundcloudUrl: "https://soundcloud.com/hamzamusic/positions" },
+  { title: "I Love You", artist: "Tayc", soundcloudUrl: "https://soundcloud.com/tayc-officiel/i-love-you" },
+  { title: "Dernier métro", artist: "Werenoi", soundcloudUrl: "https://soundcloud.com/werenoi/dernier-metro" },
+  { title: "GPS", artist: "Gazo ft. Freeze Corleone", soundcloudUrl: "https://soundcloud.com/gazo-music/gps" },
+  { title: "Dolce Vita", artist: "SDM", soundcloudUrl: "https://soundcloud.com/sdm-officiel/dolce-vita" },
+  { title: "Sale mood", artist: "Ninho", soundcloudUrl: "https://soundcloud.com/ninhofficiel/sale-mood" },
+  { title: "Gotham", artist: "SCH", soundcloudUrl: "https://soundcloud.com/sch/gotham" },
+  { title: "OG", artist: "Jul", soundcloudUrl: "https://soundcloud.com/jul-music/og" },
+  { title: "Tempête", artist: "PLK ft. Damso", soundcloudUrl: "https://soundcloud.com/plk-music/tempete" },
+  { title: "Étoile filante", artist: "Tiakola", soundcloudUrl: "https://soundcloud.com/tiakola-officiel/etoile-filante" },
+  { title: "Carbone", artist: "Freeze Corleone", soundcloudUrl: "https://soundcloud.com/music-fcrl/carbone" },
+  { title: "Benzo", artist: "Gazo", soundcloudUrl: "https://soundcloud.com/gazo-music/benzo" },
+
+  // --- 2026 ---
+  { title: "Légende", artist: "Ninho", soundcloudUrl: "https://soundcloud.com/ninhofficiel/legende" },
+  { title: "Miroir", artist: "Damso", soundcloudUrl: "https://soundcloud.com/damsofficiel/miroir" },
+  { title: "Karma", artist: "Werenoi", soundcloudUrl: "https://soundcloud.com/werenoi/karma" },
+  { title: "Eclipse", artist: "SCH", soundcloudUrl: "https://soundcloud.com/sch/eclipse" },
+  { title: "Flamme", artist: "Jul", soundcloudUrl: "https://soundcloud.com/jul-music/flamme" },
+  { title: "Voltage", artist: "Gazo ft. Hamza", soundcloudUrl: "https://soundcloud.com/gazo-music/voltage" },
+  { title: "Nébuleuse", artist: "Freeze Corleone", soundcloudUrl: "https://soundcloud.com/music-fcrl/nebuleuse" },
+  { title: "Diamant noir", artist: "Booba", soundcloudUrl: "https://soundcloud.com/booba/diamant-noir" },
 ];
 
-// Adjectifs mis à jour pour un style plus "Street/Urban"
 const adjectives = ["Trap", "Dark", "Golden", "Diamond", "Frozen", "Street", "Drill", "Shadow", "Chrome", "Hustle", "Legend", "Plug", "Ghost", "Rich", "Young", "Heavy", "Raw", "Savage", "Loyal", "Grimy"];
-
-// ... Le reste de tes fonctions (seededRandom, getDailySongs, etc.) reste inchangé ...
 
 export function generateRandomName(): string {
   const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
@@ -69,7 +78,8 @@ function getDailySeed(): number {
   return now.getUTCFullYear() * 10000 + (now.getUTCMonth() + 1) * 100 + now.getUTCDate();
 }
 
-export function getDailySongs(count: number = 10): Song[] {
+/** Returns the full pool shuffled daily — caller picks songs as needed */
+export function getDailyShuffledPool(): Song[] {
   const rng = seededRandom(getDailySeed());
   const pool = [...songPool];
 
@@ -78,9 +88,5 @@ export function getDailySongs(count: number = 10): Song[] {
     [pool[i], pool[j]] = [pool[j], pool[i]];
   }
 
-  return pool.slice(0, count);
-}
-
-export function getRandomSongs(count: number): Song[] {
-  return getDailySongs(count);
+  return pool;
 }
