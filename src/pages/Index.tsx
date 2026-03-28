@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Music, RotateCcw, Headphones } from "lucide-react";
 import GameScreen from "@/components/GameScreen";
 import SongResult from "@/components/SongResult";
-import { Song, getDailyShuffledPool, generateRandomName } from "@/data/songs";
+import { Song, Playlist, playlists, shufflePool, generateRandomName } from "@/data/songs";
 
 type GameState = "menu" | "playing" | "finished";
 
@@ -17,6 +17,7 @@ const SONGS_PER_GAME = 10;
 
 const Index = () => {
   const [gameState, setGameState] = useState<GameState>("menu");
+  const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
   const [pool, setPool] = useState<Song[]>([]);
   const [poolIndex, setPoolIndex] = useState(0);
   const [songsPlayed, setSongsPlayed] = useState(0);
@@ -24,8 +25,9 @@ const Index = () => {
   const [score, setScore] = useState(0);
   const [playerName] = useState(generateRandomName);
 
-  const startGame = () => {
-    const shuffled = getDailyShuffledPool();
+  const startGame = (playlist: Playlist) => {
+    const shuffled = shufflePool(playlist.songs);
+    setSelectedPlaylist(playlist);
     setPool(shuffled);
     setPoolIndex(0);
     setSongsPlayed(0);
@@ -37,11 +39,9 @@ const Index = () => {
   const currentSong = pool[poolIndex] ?? null;
 
   const handleTrackBlocked = () => {
-    // Skip to next song in pool without counting it
     if (poolIndex + 1 < pool.length) {
       setPoolIndex(poolIndex + 1);
     } else {
-      // No more songs in pool
       setGameState("finished");
     }
   };
@@ -77,14 +77,35 @@ const Index = () => {
             <span className="neon-pink-text">CHECK</span>
           </h1>
           <p className="text-muted-foreground font-mono text-sm max-w-md mx-auto">
-            Devine le titre ou l'artiste à partir d'un extrait. 10 sons. 5 essais chacun. Rap FR 2024-2026.
+            Devine le titre ou l'artiste à partir d'un extrait. 10 sons. 5 essais chacun.
           </p>
         </div>
 
-        <Button variant="neon" size="lg" onClick={startGame} className="text-lg px-8 py-6 animate-pulse-glow">
-          <Music className="h-5 w-5 mr-2" />
-          Lancer le challenge
-        </Button>
+        <div className="w-full max-w-md space-y-3">
+          <p className="text-center text-xs font-mono text-muted-foreground uppercase tracking-widest">
+            Choisis ta playlist
+          </p>
+          {playlists.map((playlist) => (
+            <button
+              key={playlist.id}
+              onClick={() => startGame(playlist)}
+              className="w-full group relative overflow-hidden rounded-xl border border-border bg-card p-5 text-left transition-all hover:border-primary/50 hover:shadow-[0_0_20px_hsl(var(--primary)/0.15)] active:scale-[0.98]"
+            >
+              <div className="flex items-center gap-4">
+                <span className="text-3xl">{playlist.emoji}</span>
+                <div className="flex-1">
+                  <p className="font-bold text-lg text-foreground group-hover:text-primary transition-colors">
+                    {playlist.name}
+                  </p>
+                  <p className="text-sm text-muted-foreground font-mono">
+                    {playlist.description}
+                  </p>
+                </div>
+                <Music className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
+              </div>
+            </button>
+          ))}
+        </div>
 
         <p className="text-xs font-mono text-muted-foreground">
           Tu joues en tant que <span className="neon-text">{playerName}</span>
@@ -102,6 +123,9 @@ const Index = () => {
             <span className="neon-text">SOUND</span>
             <span className="neon-pink-text">CHECK</span>
           </h1>
+          {selectedPlaylist && (
+            <span className="text-lg ml-2">{selectedPlaylist.emoji}</span>
+          )}
         </div>
 
         <div className="font-mono text-xs text-muted-foreground">
@@ -137,7 +161,6 @@ const Index = () => {
         </p>
       </div>
 
-      {/* Song results */}
       <div className="w-full max-w-md space-y-2">
         {results.map((r, i) => (
           <SongResult
@@ -150,10 +173,17 @@ const Index = () => {
         ))}
       </div>
 
-      <Button variant="neonPink" size="lg" onClick={startGame} className="text-lg px-8">
-        <RotateCcw className="h-5 w-5 mr-2" />
-        Rejouer
-      </Button>
+      <div className="flex flex-col gap-3 items-center">
+        {selectedPlaylist && (
+          <Button variant="neon" size="lg" onClick={() => startGame(selectedPlaylist)} className="text-lg px-8">
+            <RotateCcw className="h-5 w-5 mr-2" />
+            Rejouer {selectedPlaylist.emoji}
+          </Button>
+        )}
+        <Button variant="neonOutline" size="lg" onClick={() => setGameState("menu")} className="px-8">
+          Changer de playlist
+        </Button>
+      </div>
     </div>
   );
 };
