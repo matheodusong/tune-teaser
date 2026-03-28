@@ -1,20 +1,13 @@
-import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, Music } from "lucide-react";
-import { Song } from "@/data/songs";
+import { Song, fetchPreviewUrl } from "@/data/songs";
 import GuessInput from "./GuessInput";
 import AttemptDots from "./AttemptDots";
 import Waveform from "./Waveform";
 
 const DURATIONS = [1, 2, 5, 8, 10];
 const TOTAL_VISIBLE_DURATION = 30;
-
-declare global {
-  interface Window {
-    YT: any;
-    onYouTubeIframeAPIReady: (() => void) | undefined;
-  }
-}
 
 interface GameScreenProps {
   song: Song;
@@ -32,21 +25,77 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult, onTrackBlocked }: G
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [revealed, setRevealed] = useState(false);
-  const [trackBlocked, setTrackBlocked] = useState(false);
   const [trackReady, setTrackReady] = useState(false);
+  const [trackBlocked, setTrackBlocked] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const playerRef = useRef<any>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
-  const playerIdRef = useRef(`yt-player-${Math.random().toString(36).slice(2)}`);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const currentMaxDuration = DURATIONS[Math.min(attempt, 4)];
 
-  const playSnippet = useCallback(() => {
-    const player = playerRef.current;
-    if (!player || typeof player.seekTo !== "function") return;
+  // Fetch preview URL when song changes
+  useEffect(() => {
+    let cancelled = false;
+    setTrackReady(false);
+    setTrackBlocked(false);
+    setAttempt(0);
+    setAttempts(Array(5).fill("pending"));
+    setIsPlaying(false);
+    setProgress(0);
+    setRevealed(false);
 
-    player.seekTo(0, true);
-    player.playVideo();
+    // Clean up previous audio
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = "";
+      audioRef.current = null;
+    }
+    if (timerRef.current) clearInterval(timerRef.current);
+
+    fetchPreviewUrl(song).then((url) => {
+      if (cancelled) return;
+      if (!url) {
+        setTrackBlocked(true);
+        return;
+      }
+
+      const audio = new Audio(url);
+      audio.crossOrigin = "anonymous";
+      audioRef.current = audio;
+
+      audio.addEventListener("canplaythrough", () => {
+        if (!cancelled) setTrackReady(true);
+      });
+      audio.addEventListener("error", () => {
+        if (!cancelled) setTrackBlocked(true);
+      });
+
+      audio.load();
+    });
+
+    return () => {
+      cancelled = true;
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = "";
+        audioRef.current = null;
+      }
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [song]);
+
+  // Notify parent when track is blocked
+  useEffect(() => {
+    if (trackBlocked && !revealed) {
+      onTrackBlocked();
+    }
+  }, [trackBlocked, revealed, onTrackBlocked]);
+
+  const playSnippet = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    audio.currentTime = 0;
+    audio.play();
     setIsPlaying(true);
     setProgress(0);
 
@@ -60,7 +109,7 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult, onTrackBlocked }: G
       setProgress(Math.min(elapsed / maxMs, 1));
 
       if (elapsed >= maxMs) {
-        player.pauseVideo();
+        audio.pause();
         setIsPlaying(false);
         if (timerRef.current) clearInterval(timerRef.current);
       }
@@ -68,95 +117,10 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult, onTrackBlocked }: G
   }, [currentMaxDuration]);
 
   const stopPlayback = useCallback(() => {
-    playerRef.current?.pauseVideo?.();
+    audioRef.current?.pause();
     if (timerRef.current) clearInterval(timerRef.current);
     setIsPlaying(false);
   }, []);
-
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, []);
-
-  // Load YouTube IFrame API
-  useEffect(() => {
-    if (!window.YT) {
-      const script = document.createElement("script");
-      script.src = "https://www.youtube.com/iframe_api";
-      script.async = true;
-      document.body.appendChild(script);
-    }
-  }, []);
-
-  // Create / recreate player when song changes
-  useEffect(() => {
-    setTrackBlocked(false);
-    setTrackReady(false);
-
-    // Destroy previous player
-    if (playerRef.current) {
-      try { playerRef.current.destroy(); } catch {}
-      playerRef.current = null;
-    }
-
-    const createPlayer = () => {
-      if (!containerRef.current) return;
-
-      // Reset container HTML so YT creates a fresh iframe
-      containerRef.current.innerHTML = `<div id="${playerIdRef.current}"></div>`;
-
-      playerRef.current = new window.YT.Player(playerIdRef.current, {
-        height: "0",
-        width: "0",
-        videoId: song.youtubeId,
-        playerVars: {
-          autoplay: 0,
-          controls: 0,
-          disablekb: 1,
-          fs: 0,
-          modestbranding: 1,
-          rel: 0,
-        },
-        events: {
-          onReady: () => setTrackReady(true),
-          onError: () => setTrackBlocked(true),
-        },
-      });
-    };
-
-    if (window.YT && window.YT.Player) {
-      createPlayer();
-    } else {
-      window.onYouTubeIframeAPIReady = createPlayer;
-    }
-
-    return () => {
-      if (playerRef.current) {
-        try { playerRef.current.destroy(); } catch {}
-        playerRef.current = null;
-      }
-    };
-  }, [song]);
-
-  // When track is blocked, notify parent to skip without counting
-  useEffect(() => {
-    if (trackBlocked && !revealed) {
-      onTrackBlocked();
-    }
-  }, [trackBlocked, revealed, onTrackBlocked]);
-
-  // Reset when song changes
-  useEffect(() => {
-    setAttempt(0);
-    setAttempts(Array(5).fill("pending"));
-    setIsPlaying(false);
-    setProgress(0);
-    setRevealed(false);
-    setTrackBlocked(false);
-    setTrackReady(false);
-    if (timerRef.current) clearInterval(timerRef.current);
-  }, [song]);
 
   const normalize = (s: string) => s.toLowerCase().replace(/[^a-z0-9]/g, "");
 
@@ -209,8 +173,6 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult, onTrackBlocked }: G
         <Music className="h-4 w-4" />
         <span>Son {songIndex + 1} / {totalSongs}</span>
       </div>
-
-      <div ref={containerRef} className="hidden" />
 
       {trackBlocked ? (
         <div className="text-center p-4 rounded-lg w-full bg-muted/20 border border-muted-foreground/20">

@@ -1,76 +1,81 @@
 export interface Song {
   title: string;
   artist: string;
-  youtubeId: string;
+  searchQuery: string; // Used to find the track on iTunes
+  previewUrl?: string; // Filled at runtime
 }
 
-// Meilleurs sons Rap FR 2024-2026 — YouTube video IDs
+// French Rap 2024-2026 — search queries for iTunes
 export const songPool: Song[] = [
   // --- 2024 ---
-  { title: "Makak", artist: "Gazo", youtubeId: "QfSszbMzVRI" },
-  { title: "Bande organisée 2", artist: "Jul", youtubeId: "JMq0jYaFttE" },
-  { title: "Pyramide", artist: "Werenoi", youtubeId: "8Y5gonaRMHo" },
-  { title: "Spider", artist: "Gims ft. Dystinct", youtubeId: "uxFjqEsDJas" },
-  { title: "Filtré", artist: "Damso", youtubeId: "sW7GWBR82rQ" },
-  { title: "Pégase", artist: "SCH", youtubeId: "ZF9hGt1R_9s" },
-  { title: "Jefe", artist: "Naps", youtubeId: "rIZF3XKoal0" },
-  { title: "Iverson", artist: "Ninho", youtubeId: "0R4fGZs_upg" },
-  { title: "Hola", artist: "PLK", youtubeId: "iPGVPOcsnCg" },
-  { title: "Kratos", artist: "Freeze Corleone", youtubeId: "K9bhGPQ6pR0" },
-  { title: "Imagine", artist: "Carbonne", youtubeId: "gPsE6PqQv1k" },
-  { title: "Godzilla", artist: "Gazo ft. Tiakola", youtubeId: "YIChJ35Jk3c" },
-  { title: "Fantôme", artist: "Damso", youtubeId: "aVPGT3UXrrY" },
-  { title: "CBA", artist: "SDM", youtubeId: "Krd6xK47cxg" },
-  { title: "Billet vert", artist: "Ninho", youtubeId: "PoS8kpG0oOA" },
-  { title: "Longue vie", artist: "PLK", youtubeId: "rq8ywVKbPaI" },
-  { title: "Tout va bien", artist: "Alonzo", youtubeId: "NJsLT_JfUHE" },
-  { title: "Dolce Vita", artist: "SDM", youtubeId: "L7L3bPGxLqQ" },
-  { title: "Macaroni", artist: "Jul", youtubeId: "AhGzuwCT8ec" },
-  { title: "Cendrillon", artist: "Tiakola", youtubeId: "NSmxXoYEv2A" },
-  { title: "La Béné", artist: "Heuss L'enfoiré", youtubeId: "17YSdxNsI_0" },
-  { title: "Clic clic pan pan", artist: "Niska ft. Gazo", youtubeId: "j7oQEPfCz3k" },
-  { title: "GPS", artist: "Gazo ft. Freeze Corleone", youtubeId: "DVDyQLb5bHc" },
-  { title: "Tony Montana", artist: "SCH", youtubeId: "BuZ5LEmFx_0" },
-  { title: "Mona Lisa", artist: "Booba", youtubeId: "s4vKNxFp3SY" },
-  { title: "Tulum", artist: "Tiakola", youtubeId: "t-fxHg3Lpfo" },
-  { title: "Hov", artist: "Zola", youtubeId: "pVCqdZ2ORYA" },
-  { title: "La zone", artist: "Jul", youtubeId: "wK5FBWdKhV0" },
-  { title: "Les derniers salopards", artist: "SCH", youtubeId: "oFuQ7vXs4JY" },
-  { title: "Ça fait longtemps", artist: "Ninho", youtubeId: "N2AvYjJTYVE" },
-
+  { title: "Makak", artist: "Gazo", searchQuery: "Makak Gazo" },
+  { title: "Bande organisée 2", artist: "Jul", searchQuery: "Bande organisée 2 Jul" },
+  { title: "Pyramide", artist: "Werenoi", searchQuery: "Pyramide Werenoi" },
+  { title: "Spider", artist: "Gims", searchQuery: "Spider Gims Dystinct" },
+  { title: "Filtré", artist: "Damso", searchQuery: "Filtré Damso" },
+  { title: "Pégase", artist: "SCH", searchQuery: "Pégase SCH" },
+  { title: "Jefe", artist: "Naps", searchQuery: "Jefe Naps" },
+  { title: "Iverson", artist: "Ninho", searchQuery: "Iverson Ninho" },
+  { title: "Hola", artist: "PLK", searchQuery: "Hola PLK" },
+  { title: "Imagine", artist: "Carbonne", searchQuery: "Imagine Carbonne" },
+  { title: "Godzilla", artist: "Gazo", searchQuery: "Godzilla Gazo Tiakola" },
+  { title: "Fantôme", artist: "Damso", searchQuery: "Fantôme Damso" },
+  { title: "CBA", artist: "SDM", searchQuery: "CBA SDM" },
+  { title: "Billet vert", artist: "Ninho", searchQuery: "Billet vert Ninho" },
+  { title: "Longue vie", artist: "PLK", searchQuery: "Longue vie PLK" },
+  { title: "Tout va bien", artist: "Alonzo", searchQuery: "Tout va bien Alonzo" },
+  { title: "Dolce Vita", artist: "SDM", searchQuery: "Dolce Vita SDM" },
+  { title: "Macaroni", artist: "Jul", searchQuery: "Macaroni Jul" },
+  { title: "Cendrillon", artist: "Tiakola", searchQuery: "Cendrillon Tiakola" },
+  { title: "Clic clic pan pan", artist: "Niska", searchQuery: "Clic clic pan pan Niska" },
+  { title: "GPS", artist: "Gazo", searchQuery: "GPS Gazo Freeze Corleone" },
+  { title: "Tony Montana", artist: "SCH", searchQuery: "Tony Montana SCH" },
+  { title: "Tulum", artist: "Tiakola", searchQuery: "Tulum Tiakola" },
+  { title: "La zone", artist: "Jul", searchQuery: "La zone Jul" },
+  { title: "Les derniers salopards", artist: "SCH", searchQuery: "Les derniers salopards SCH" },
+  
   // --- 2025 ---
-  { title: "Grosse machine", artist: "Werenoi", youtubeId: "8kZ4Fto5O2k" },
-  { title: "Chambellan", artist: "Gazo", youtubeId: "yNbj3n5GCKY" },
-  { title: "Positions", artist: "Hamza", youtubeId: "IQZNvx0s__Y" },
-  { title: "Dernier métro", artist: "Werenoi", youtubeId: "xxjk5yDCMHI" },
-  { title: "Sale mood", artist: "Ninho", youtubeId: "5R3CkCLqp4o" },
-  { title: "Gotham", artist: "SCH", youtubeId: "a-FZ5qRh5rA" },
-  { title: "OG", artist: "Jul", youtubeId: "0e5P9mZFOxo" },
-  { title: "Tempête", artist: "PLK ft. Damso", youtubeId: "0ORzfK4i8OI" },
-  { title: "Étoile filante", artist: "Tiakola", youtubeId: "cMvjFRqJ8Os" },
-  { title: "Carbone", artist: "Freeze Corleone", youtubeId: "Z9AQcVKj3jY" },
-  { title: "Benzo", artist: "Gazo", youtubeId: "52sVe9fKL5g" },
-  { title: "I Love You", artist: "Tayc", youtubeId: "Ouh8Zz-FWOQ" },
-  { title: "Sur la lune", artist: "Damso", youtubeId: "Pr5VIBVTEMw" },
-  { title: "Saiyan", artist: "Gazo ft. Tiakola", youtubeId: "JqJbqZSwfMA" },
-  { title: "Saturne", artist: "Ninho", youtubeId: "pEuY2cAX7YA" },
-  { title: "La danse", artist: "Aya Nakamura", youtubeId: "WHsGO6ckBOo" },
-  { title: "Bail 2 ouf", artist: "Booba", youtubeId: "kaBOA5eSHgM" },
-  { title: "Freestyle Booska'P", artist: "Niska", youtubeId: "TBRDaw5KzX0" },
-  { title: "Miracle", artist: "Tayc", youtubeId: "kQ20gl-FsT0" },
-  { title: "Mama", artist: "Heuss L'enfoiré ft. Jul", youtubeId: "oZ6Cw-sHBig" },
-
-  // --- 2026 ---
-  { title: "Légende", artist: "Ninho", youtubeId: "YKr_TP4V9M8" },
-  { title: "Miroir", artist: "Damso", youtubeId: "P3kJAJvPCcU" },
-  { title: "Karma", artist: "Werenoi", youtubeId: "GMNF2oSKWko" },
-  { title: "Eclipse", artist: "SCH", youtubeId: "7oQvQ55z1ZU" },
-  { title: "Flamme", artist: "Jul", youtubeId: "3aM2q3vhVr0" },
-  { title: "Voltage", artist: "Gazo ft. Hamza", youtubeId: "mO3sY2tYmdc" },
-  { title: "Nébuleuse", artist: "Freeze Corleone", youtubeId: "uCpOVxFb2Fw" },
-  { title: "Diamant noir", artist: "Booba", youtubeId: "BPVfQv-qb-A" },
-  { title: "Paradis", artist: "PLK", youtubeId: "VW1DzR-0rCk" },
-  { title: "Inferno", artist: "SDM", youtubeId: "ZjK-bX1sKYk" },
+  { title: "Grosse machine", artist: "Werenoi", searchQuery: "Grosse machine Werenoi" },
+  { title: "Chambellan", artist: "Gazo", searchQuery: "Chambellan Gazo" },
+  { title: "Dernier métro", artist: "Werenoi", searchQuery: "Dernier métro Werenoi" },
+  { title: "Sale mood", artist: "Ninho", searchQuery: "Sale mood Ninho" },
+  { title: "OG", artist: "Jul", searchQuery: "OG Jul" },
+  { title: "Étoile filante", artist: "Tiakola", searchQuery: "Étoile filante Tiakola" },
+  { title: "Benzo", artist: "Gazo", searchQuery: "Benzo Gazo" },
+  { title: "Sur la lune", artist: "Damso", searchQuery: "Sur la lune Damso" },
+  { title: "Saiyan", artist: "Gazo", searchQuery: "Saiyan Gazo Tiakola" },
+  { title: "Saturne", artist: "Ninho", searchQuery: "Saturne Ninho" },
+  { title: "La danse", artist: "Aya Nakamura", searchQuery: "La danse Aya Nakamura" },
+  { title: "Miracle", artist: "Tayc", searchQuery: "Miracle Tayc" },
+  
+  // --- Classics encore populaires ---
+  { title: "Djadja", artist: "Aya Nakamura", searchQuery: "Djadja Aya Nakamura" },
+  { title: "La kiffance", artist: "Naps", searchQuery: "La kiffance Naps" },
+  { title: "Avant toi", artist: "Vitaa Slimane", searchQuery: "Avant toi Vitaa Slimane" },
+  { title: "Bande organisée", artist: "Jul", searchQuery: "Bande organisée Jul" },
+  { title: "Validé", artist: "Booba", searchQuery: "Validé Booba" },
+  { title: "Anissa", artist: "Wejdene", searchQuery: "Anissa Wejdene" },
+  { title: "Au DD", artist: "PNL", searchQuery: "Au DD PNL" },
+  { title: "Blinding Lights", artist: "The Weeknd", searchQuery: "Blinding Lights Weeknd" },
+  { title: "Sapés comme jamais", artist: "Maître Gims", searchQuery: "Sapés comme jamais Maître Gims" },
+  { title: "Bella", artist: "Maître Gims", searchQuery: "Bella Maître Gims" },
+  { title: "Désaccordé", artist: "Vald", searchQuery: "Désaccordé Vald" },
+  { title: "Freestyle Booska'P", artist: "Niska", searchQuery: "Niska Booska" },
+  { title: "Dégaine", artist: "Aya Nakamura", searchQuery: "Dégaine Aya Nakamura" },
+  { title: "Pookie", artist: "Aya Nakamura", searchQuery: "Pookie Aya Nakamura" },
+  { title: "Jolie nana", artist: "Aya Nakamura", searchQuery: "Jolie nana Aya Nakamura" },
+  { title: "Copines", artist: "Aya Nakamura", searchQuery: "Copines Aya Nakamura" },
+  { title: "Réseaux", artist: "Niska", searchQuery: "Réseaux Niska" },
+  { title: "Vroum vroum", artist: "Jul", searchQuery: "Vroum vroum Jul" },
+  { title: "Tout oublier", artist: "Angèle", searchQuery: "Tout oublier Angèle" },
+  { title: "Balance ton quoi", artist: "Angèle", searchQuery: "Balance ton quoi Angèle" },
+  { title: "Dernière danse", artist: "Indila", searchQuery: "Dernière danse Indila" },
+  { title: "Basique", artist: "Orelsan", searchQuery: "Basique Orelsan" },
+  { title: "La vie est belle", artist: "Nassi", searchQuery: "La vie est belle Nassi" },
+  { title: "Dieu merci", artist: "Ninho", searchQuery: "Dieu merci Ninho" },
+  { title: "Lettre à une femme", artist: "Ninho", searchQuery: "Lettre à une femme Ninho" },
+  { title: "Jefe", artist: "Ninho", searchQuery: "Jefe Ninho" },
+  { title: "Trafiquante", artist: "Jul", searchQuery: "Trafiquante Jul" },
 ];
 
 const adjectives = ["Trap", "Dark", "Golden", "Diamond", "Frozen", "Street", "Drill", "Shadow", "Chrome", "Hustle", "Legend", "Plug", "Ghost", "Rich", "Young", "Heavy", "Raw", "Savage", "Loyal", "Grimy"];
@@ -109,4 +114,22 @@ export function getDailyShuffledPool(): Song[] {
   }
 
   return pool;
+}
+
+/** Fetch iTunes preview URL for a song. Returns the previewUrl or null. */
+export async function fetchPreviewUrl(song: Song): Promise<string | null> {
+  try {
+    const response = await fetch(
+      `https://itunes.apple.com/search?term=${encodeURIComponent(song.searchQuery)}&media=music&limit=5`
+    );
+    const data = await response.json();
+    if (data.results && data.results.length > 0) {
+      // Find best match — prefer one with a preview URL
+      const withPreview = data.results.find((r: any) => r.previewUrl);
+      return withPreview?.previewUrl || null;
+    }
+    return null;
+  } catch {
+    return null;
+  }
 }
