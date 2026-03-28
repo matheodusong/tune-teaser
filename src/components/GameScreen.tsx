@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Play, Pause, Music } from "lucide-react";
 import { Song } from "@/data/songs";
@@ -8,6 +8,13 @@ import Waveform from "./Waveform";
 
 const DURATIONS = [1, 2, 5, 8, 10];
 const TOTAL_VISIBLE_DURATION = 30;
+
+declare global {
+  interface Window {
+    YT: any;
+    onYouTubeIframeAPIReady: (() => void) | undefined;
+  }
+}
 
 interface GameScreenProps {
   song: Song;
@@ -25,23 +32,21 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult, onTrackBlocked }: G
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [revealed, setRevealed] = useState(false);
-  const [audioLoaded, setAudioLoaded] = useState(false);
   const [trackBlocked, setTrackBlocked] = useState(false);
   const [trackReady, setTrackReady] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const widgetRef = useRef<HTMLIFrameElement | null>(null);
+  const playerRef = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const playerIdRef = useRef(`yt-player-${Math.random().toString(36).slice(2)}`);
 
   const currentMaxDuration = DURATIONS[Math.min(attempt, 4)];
 
-  const scWidgetUrl = `https://w.soundcloud.com/player/?url=${encodeURIComponent(song.soundcloudUrl)}&auto_play=false&hide_related=true&show_comments=false&show_user=false&show_reposts=false&show_teaser=false&visual=false`;
-
   const playSnippet = useCallback(() => {
-    if (!widgetRef.current) return;
-    const widget = (window as any).SC?.Widget?.(widgetRef.current);
-    if (!widget) return;
+    const player = playerRef.current;
+    if (!player || typeof player.seekTo !== "function") return;
 
-    widget.seekTo(0);
-    widget.play();
+    player.seekTo(0, true);
+    player.playVideo();
     setIsPlaying(true);
     setProgress(0);
 
@@ -55,7 +60,7 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult, onTrackBlocked }: G
       setProgress(Math.min(elapsed / maxMs, 1));
 
       if (elapsed >= maxMs) {
-        widget.pause();
+        player.pauseVideo();
         setIsPlaying(false);
         if (timerRef.current) clearInterval(timerRef.current);
       }
@@ -63,10 +68,7 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult, onTrackBlocked }: G
   }, [currentMaxDuration]);
 
   const stopPlayback = useCallback(() => {
-    if (widgetRef.current) {
-      const widget = (window as any).SC?.Widget?.(widgetRef.current);
-      widget?.pause();
-    }
+    playerRef.current?.pauseVideo?.();
     if (timerRef.current) clearInterval(timerRef.current);
     setIsPlaying(false);
   }, []);
@@ -77,47 +79,65 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult, onTrackBlocked }: G
     };
   }, []);
 
-  // Load SC Widget API
+  // Load YouTube IFrame API
   useEffect(() => {
-    if (!(window as any).SC) {
+    if (!window.YT) {
       const script = document.createElement("script");
-      script.src = "https://w.soundcloud.com/player/api.js";
+      script.src = "https://www.youtube.com/iframe_api";
       script.async = true;
-      script.onload = () => setAudioLoaded(true);
       document.body.appendChild(script);
-    } else {
-      setAudioLoaded(true);
     }
   }, []);
 
-  // Validate track
+  // Create / recreate player when song changes
   useEffect(() => {
-    if (!audioLoaded || !widgetRef.current) return;
     setTrackBlocked(false);
     setTrackReady(false);
 
-    const checkWidget = () => {
-      const widget = (window as any).SC?.Widget?.(widgetRef.current);
-      if (!widget) return;
+    // Destroy previous player
+    if (playerRef.current) {
+      try { playerRef.current.destroy(); } catch {}
+      playerRef.current = null;
+    }
 
-      widget.bind((window as any).SC.Widget.Events.READY, () => {
-        widget.getDuration((duration: number) => {
-          if (!duration || duration === 0) {
-            setTrackBlocked(true);
-          } else {
-            setTrackReady(true);
-          }
-        });
-      });
+    const createPlayer = () => {
+      if (!containerRef.current) return;
 
-      widget.bind((window as any).SC.Widget.Events.ERROR, () => {
-        setTrackBlocked(true);
+      // Reset container HTML so YT creates a fresh iframe
+      containerRef.current.innerHTML = `<div id="${playerIdRef.current}"></div>`;
+
+      playerRef.current = new window.YT.Player(playerIdRef.current, {
+        height: "0",
+        width: "0",
+        videoId: song.youtubeId,
+        playerVars: {
+          autoplay: 0,
+          controls: 0,
+          disablekb: 1,
+          fs: 0,
+          modestbranding: 1,
+          rel: 0,
+        },
+        events: {
+          onReady: () => setTrackReady(true),
+          onError: () => setTrackBlocked(true),
+        },
       });
     };
 
-    const timeout = setTimeout(checkWidget, 500);
-    return () => clearTimeout(timeout);
-  }, [audioLoaded, song]);
+    if (window.YT && window.YT.Player) {
+      createPlayer();
+    } else {
+      window.onYouTubeIframeAPIReady = createPlayer;
+    }
+
+    return () => {
+      if (playerRef.current) {
+        try { playerRef.current.destroy(); } catch {}
+        playerRef.current = null;
+      }
+    };
+  }, [song]);
 
   // When track is blocked, notify parent to skip without counting
   useEffect(() => {
@@ -190,15 +210,7 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult, onTrackBlocked }: G
         <span>Son {songIndex + 1} / {totalSongs}</span>
       </div>
 
-      <iframe
-        ref={widgetRef}
-        src={scWidgetUrl}
-        width="0"
-        height="0"
-        allow="autoplay"
-        className="hidden"
-        title="SoundCloud Player"
-      />
+      <div ref={containerRef} className="hidden" />
 
       {trackBlocked ? (
         <div className="text-center p-4 rounded-lg w-full bg-muted/20 border border-muted-foreground/20">
