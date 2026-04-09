@@ -59,7 +59,8 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult, onTrackBlocked }: G
       }
 
       const audio = new Audio(url);
-      audio.crossOrigin = "anonymous";
+      audio.setAttribute("playsinline", "true");
+      audio.preload = "auto";
       audioRef.current = audio;
 
       audio.addEventListener("canplaythrough", () => {
@@ -95,7 +96,9 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult, onTrackBlocked }: G
     if (!audio) return;
 
     audio.currentTime = 0;
-    audio.play();
+    audio.play().catch(() => {
+      setIsPlaying(false);
+    });
     setIsPlaying(true);
     setProgress(0);
 
