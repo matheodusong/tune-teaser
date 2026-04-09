@@ -59,7 +59,8 @@ const GameScreen = ({ song, songIndex, totalSongs, onResult, onTrackBlocked }: G
       }
 
       const audio = new Audio(url);
-      audio.crossOrigin = "anonymous";
+      audio.setAttribute("playsinline", "true");
+      audio.preload = "auto";
       audioRef.current = audio;
 
       audio.addEventListener("canplaythrough", () => {

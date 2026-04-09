@@ -216,15 +216,46 @@ export function shufflePool(songs: Song[]): Song[] {
   return pool;
 }
 
+function normalizeForMatch(s: string): string {
+  return s.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function resultMatchesSong(result: any, song: Song): boolean {
+  const rArtist = normalizeForMatch(result.artistName || "");
+  const rTrack = normalizeForMatch(result.trackName || "");
+  const sArtist = normalizeForMatch(song.artist);
+  const sTitle = normalizeForMatch(song.title);
+
+  const artistMatch = rArtist.includes(sArtist) || sArtist.includes(rArtist);
+  const titleMatch = rTrack.includes(sTitle) || sTitle.includes(rTrack);
+
+  return artistMatch && titleMatch;
+}
+
 export async function fetchPreviewUrl(song: Song): Promise<string | null> {
   try {
     const response = await fetch(
-      `https://itunes.apple.com/search?term=${encodeURIComponent(song.searchQuery)}&media=music&limit=5`
+      `https://itunes.apple.com/search?term=${encodeURIComponent(song.searchQuery)}&media=music&limit=10`
     );
     const data = await response.json();
     if (data.results && data.results.length > 0) {
-      const withPreview = data.results.find((r: any) => r.previewUrl);
-      return withPreview?.previewUrl || null;
+      // First try: exact match on artist AND title
+      const exactMatch = data.results.find(
+        (r: any) => r.previewUrl && resultMatchesSong(r, song)
+      );
+      if (exactMatch) return exactMatch.previewUrl;
+
+      // Fallback: match on artist only
+      const sArtist = normalizeForMatch(song.artist);
+      const artistOnly = data.results.find((r: any) => {
+        if (!r.previewUrl) return false;
+        const rArtist = normalizeForMatch(r.artistName || "");
+        return rArtist.includes(sArtist) || sArtist.includes(rArtist);
+      });
+      if (artistOnly) return artistOnly.previewUrl;
+
+      // Last resort: first result with preview (skip to avoid wrong song)
+      return null;
     }
     return null;
   } catch {
