@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Music, RotateCcw, Headphones } from "lucide-react";
+import { Music, RotateCcw, Headphones, Loader2 } from "lucide-react";
 import GameScreen from "@/components/GameScreen";
 import SongResult from "@/components/SongResult";
-import { Song, Playlist, playlists, shufflePool, generateRandomName } from "@/data/songs";
+import { Song, shufflePool, generateRandomName } from "@/data/songs";
+import { chartPlaylists, ChartPlaylist } from "@/data/chartService";
 
-type GameState = "menu" | "playing" | "finished";
+type GameState = "menu" | "loading" | "playing" | "finished";
 
 interface SongResultData {
   song: Song;
@@ -17,23 +18,39 @@ const SONGS_PER_GAME = 10;
 
 const Index = () => {
   const [gameState, setGameState] = useState<GameState>("menu");
-  const [selectedPlaylist, setSelectedPlaylist] = useState<Playlist | null>(null);
+  const [selectedPlaylist, setSelectedPlaylist] = useState<ChartPlaylist | null>(null);
   const [pool, setPool] = useState<Song[]>([]);
   const [poolIndex, setPoolIndex] = useState(0);
   const [songsPlayed, setSongsPlayed] = useState(0);
   const [results, setResults] = useState<SongResultData[]>([]);
   const [score, setScore] = useState(0);
   const [playerName] = useState(generateRandomName);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  const startGame = (playlist: Playlist) => {
-    const shuffled = shufflePool(playlist.songs);
+  const startGame = async (playlist: ChartPlaylist) => {
     setSelectedPlaylist(playlist);
-    setPool(shuffled);
-    setPoolIndex(0);
-    setSongsPlayed(0);
-    setResults([]);
-    setScore(0);
-    setGameState("playing");
+    setGameState("loading");
+    setLoadError(null);
+
+    try {
+      const songs = await playlist.fetchSongs();
+      if (songs.length === 0) {
+        setLoadError("Aucune chanson trouvée pour cette playlist.");
+        setGameState("menu");
+        return;
+      }
+      const shuffled = shufflePool(songs);
+      setPool(shuffled);
+      setPoolIndex(0);
+      setSongsPlayed(0);
+      setResults([]);
+      setScore(0);
+      setGameState("playing");
+    } catch (err) {
+      console.error("Failed to fetch chart:", err);
+      setLoadError("Impossible de charger le classement. Réessaie.");
+      setGameState("menu");
+    }
   };
 
   const currentSong = pool[poolIndex] ?? null;
@@ -64,6 +81,18 @@ const Index = () => {
     }, 500);
   };
 
+  // Loading screen
+  if (gameState === "loading") {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 gap-4">
+        <Loader2 className="h-10 w-10 animate-spin neon-text" />
+        <p className="text-sm text-muted-foreground font-mono animate-pulse">
+          Chargement du classement Apple Music...
+        </p>
+      </div>
+    );
+  }
+
   // Menu screen
   if (gameState === "menu") {
     return (
@@ -81,11 +110,15 @@ const Index = () => {
           </p>
         </div>
 
+        {loadError && (
+          <p className="text-destructive text-sm font-mono text-center">{loadError}</p>
+        )}
+
         <div className="w-full max-w-md space-y-3">
           <p className="text-center text-xs font-mono text-muted-foreground uppercase tracking-widest">
             Choisis ta playlist
           </p>
-          {playlists.map((playlist) => (
+          {chartPlaylists.map((playlist) => (
             <button
               key={playlist.id}
               onClick={() => startGame(playlist)}
