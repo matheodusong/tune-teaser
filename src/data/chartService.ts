@@ -1,6 +1,6 @@
 import { Song } from "./songs";
 
-const APPLE_RSS_BASE = "https://rss.applemarketingtools.com/api/v2";
+const APPLE_RSS_BASE = "https://rss.marketingtools.apple.com/api/v2";
 const CACHE_DURATION_MS = 7 * 24 * 60 * 60 * 1000; // 1 week
 
 interface AppleMusicResult {
